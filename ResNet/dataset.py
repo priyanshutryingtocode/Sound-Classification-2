@@ -21,7 +21,7 @@ class UrbanSoundDataset(Dataset):
 
     def __getitem__(self, index):
         try:
-            spectrogram = torch.load(self.file_paths[index])
+            spectrogram = torch.load(self.file_paths[index], weights_only=True)
             return spectrogram, self.labels[index]
         except Exception:
             # Fallback for corrupted files
