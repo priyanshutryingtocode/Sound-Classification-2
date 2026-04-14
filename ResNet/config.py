@@ -12,7 +12,7 @@ os.makedirs(SAVE_DIR, exist_ok=True)
 
 # --- HYPERPARAMETERS ---
 BATCH_SIZE = 64
-EPOCHS = 20
+EPOCHS = 10
 LEARNING_RATE = 0.001
 TEST_FOLD = 10 
 
