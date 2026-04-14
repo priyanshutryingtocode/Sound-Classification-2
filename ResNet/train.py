@@ -74,7 +74,7 @@ def train_model():
 
         if val_acc > best_acc:
             best_acc = val_acc
-            save_path = os.path.join(config.SAVE_DIR, f"resnet_best_fold_{config.TEST_FOLD}.pth")
+            save_path = os.path.join(config.SAVE_DIR, f"resnet_best_fold_{config.TEST_FOLD}_iter2.pth")
             torch.save(model.state_dict(), save_path)
             print(f"   -> New best model saved! ({best_acc:.2f}%)")
 
