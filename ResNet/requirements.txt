@@ -3,3 +3,6 @@ torchvision
 torchaudio
 numpy
 tqdm
+seaborn
+matplotlib
+scikit-learn
