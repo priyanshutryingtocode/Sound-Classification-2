@@ -24,11 +24,10 @@ class UrbanSoundDataset(Dataset):
             spectrogram = torch.load(self.file_paths[index], weights_only=True)
             return spectrogram, self.labels[index]
         except Exception:
-            # Fallback for corrupted files
             return torch.zeros(1, 64, 172), self.labels[index]
 
 def get_dataloaders():
-    """Utility function to quickly grab the train and test loaders"""
+
     train_folds = [f for f in range(1, 11) if f != config.TEST_FOLD]
     
     train_ds = UrbanSoundDataset(config.DATA_DIR, folds=train_folds)

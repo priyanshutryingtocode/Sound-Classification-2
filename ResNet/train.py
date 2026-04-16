@@ -9,11 +9,9 @@ from model import ResNetAudio
 
 def train_model():
     print(f"Using device: {config.DEVICE}")
-    print("Loading data...")
     
     train_loader, test_loader, train_folds = get_dataloaders()
     print(f"Starting training on Folds {train_folds} | Testing on Fold {config.TEST_FOLD}")
-    print("-" * 50)
 
     model = ResNetAudio().to(config.DEVICE)
     criterion = nn.CrossEntropyLoss()
@@ -26,9 +24,6 @@ def train_model():
         model.train()
         running_loss, correct, total = 0.0, 0, 0
         
-        # --- 2. WRAP THE TRAINING DATALOADER ---
-        # desc: The text shown next to the bar
-        # leave=False: Deletes the bar when the epoch finishes to keep the terminal clean
         train_loop = tqdm(train_loader, desc=f"Epoch [{epoch+1:2d}/{config.EPOCHS}] Train", leave=False)
         
         for inputs, labels in train_loop:
@@ -45,13 +40,11 @@ def train_model():
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
 
-            # --- 3. UPDATE PROGRESS BAR TEXT REAL-TIME ---
             train_loop.set_postfix(loss=loss.item())
 
         train_acc = 100. * correct / total
         avg_loss = running_loss / len(train_loader)
 
-        # --- 4. WRAP THE VALIDATION DATALOADER ---
         model.eval()
         val_correct, val_total = 0, 0
         
@@ -69,7 +62,6 @@ def train_model():
         val_acc = 100. * val_correct / val_total
         scheduler.step(val_acc)
 
-        # 5. The final epoch summary printout remains the same
         print(f"Epoch [{epoch+1:2d}/{config.EPOCHS}] | Train Loss: {avg_loss:.4f} | Train Acc: {train_acc:.2f}% | Val Acc: {val_acc:.2f}%")
 
         if val_acc > best_acc:
@@ -78,7 +70,6 @@ def train_model():
             torch.save(model.state_dict(), save_path)
             print(f"   -> New best model saved! ({best_acc:.2f}%)")
 
-    print("-" * 50)
     print(f"Training complete. Best Validation Accuracy: {best_acc:.2f}%")
 
 if __name__ == "__main__":
