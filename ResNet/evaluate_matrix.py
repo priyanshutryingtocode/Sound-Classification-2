@@ -6,7 +6,6 @@ import seaborn as sns # type: ignore
 from sklearn.metrics import confusion_matrix
 from torch.utils.data import DataLoader
 
-
 import config
 from dataset import UrbanSoundDataset
 from model import ResNetAudio
@@ -45,14 +44,27 @@ def generate_matrix(fold_to_test, output_dir):
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(labels.numpy())
 
+    # Calculate raw counts
     cm = confusion_matrix(all_labels, all_preds)
+    
+    # NEW: Calculate the score out of 1 (normalized by row)
+    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    
+    # NEW: Create custom text annotations combining raw count and decimal score
+    annot_labels = np.empty_like(cm, dtype=object)
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            # Example format: "42\n(0.85)"
+            annot_labels[i, j] = f"{cm[i, j]}\n({cm_normalized[i, j]:.2f})"
 
     plt.figure(figsize=(12, 10))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                xticklabels=CLASSES, yticklabels=CLASSES,
-                cbar_kws={'label': 'Number of Guesses'})
     
-    plt.title(f'UrbanSound8K Confusion Matrix (Fold {fold_to_test})', fontsize=16, pad=20)
+    # NEW: Feed the normalized matrix for coloring, but use our custom text for the labels
+    sns.heatmap(cm_normalized, annot=annot_labels, fmt='', cmap='Blues',
+                xticklabels=CLASSES, yticklabels=CLASSES,
+                cbar_kws={'label': 'Prediction Accuracy (Score out of 1)'})
+    
+    plt.title(f'ResNet Confusion Matrix (Fold {fold_to_test})', fontsize=16, pad=20)
     plt.ylabel('Actual, True Sound', fontsize=14)
     plt.xlabel('What the Model Guessed', fontsize=14)
     plt.xticks(rotation=45, ha='right')
