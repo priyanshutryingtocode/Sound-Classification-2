@@ -50,12 +50,10 @@ def generate_cumulative_matrix():
     total_guesses = np.sum(cm)
     overall_accuracy = (total_correct / total_guesses) * 100
 
-    # Calculate the score out of 1 (normalized by row)
     cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
     plt.figure(figsize=(14, 12))
     
-    # We pass the normalized matrix directly to Seaborn and tell it to format as a 2-decimal float ('.2f')
     sns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap='Blues',
                 xticklabels=CLASSES, yticklabels=CLASSES,
                 cbar_kws={'label': 'Prediction Accuracy (Score out of 1)'})

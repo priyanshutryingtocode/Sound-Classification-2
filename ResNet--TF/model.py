@@ -43,19 +43,16 @@ class ResNetTF(nn.Module):
         super(ResNetTF, self).__init__()
         self.backbone = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
         
-        # Modify first conv layer to accept 1-channel spectrograms
         original_conv1 = self.backbone.conv1
         self.backbone.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
         with torch.no_grad():
             self.backbone.conv1.weight[:] = original_conv1.weight[:, 0:1, :, :]
             
-        # ResNet-18 specific channel sizes
         self.tf_attn1 = TFAttention(channels=64)
         self.tf_attn2 = TFAttention(channels=128)
         self.tf_attn3 = TFAttention(channels=256)
         self.tf_attn4 = TFAttention(channels=512)
         
-        # Classification Head with strong dropout
         num_features = self.backbone.fc.in_features
         self.backbone.fc = nn.Sequential(
             nn.Dropout(0.5),

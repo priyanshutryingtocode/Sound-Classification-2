@@ -24,5 +24,4 @@ class UrbanSoundDataset(Dataset):
         try: 
             return torch.load(self.file_paths[index], weights_only=True), self.labels[index]
         except Exception: 
-            # Fallback for corrupted files
             return torch.zeros(1, 64, 172), self.labels[index]

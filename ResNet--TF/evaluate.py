@@ -1,6 +1,6 @@
 import os
 import matplotlib
-matplotlib.use('Agg') # AT THE VERY TOP: Forces headless mode to prevent GUI deadlocks
+matplotlib.use('Agg') 
 
 import torch
 import numpy as np
@@ -37,9 +37,9 @@ def plot_master_confusion_matrix():
         
         try:
             model.load_state_dict(torch.load(weights_path, map_location=cfg.DEVICE, weights_only=True))
-            print(f"✅ Loaded weights for Fold {fold}...")
+            print(f"Loaded weights for Fold {fold}...")
         except FileNotFoundError:
-            print(f"⚠️ Warning: Could not find {weights_path}. Skipping...")
+            print(f"Warning: Could not find {weights_path}. Skipping...")
             continue
 
         model.eval()
@@ -52,9 +52,6 @@ def plot_master_confusion_matrix():
                 all_preds.extend(preds.cpu().numpy())
                 all_labels.extend(labels.numpy())
 
-    # ==========================================
-    # FAILSAFE CHECK
-    # ==========================================
     print(f"\nData collected! Total predictions loaded: {len(all_preds)}")
     if len(all_preds) == 0:
         print("🛑 ERROR: No predictions were generated! The script did not load your .pth files.")
@@ -81,16 +78,11 @@ def plot_master_confusion_matrix():
     plt.yticks(rotation=0, fontsize=11)
     plt.tight_layout()
 
-    # ==========================================
-    # HEADLESS SAVE
-    # ==========================================
     save_path = os.path.join(cfg.SAVE_DIR, "master_confusion_matrix.png")
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    
-    # Explicitly close the plot to free memory
     plt.close() 
     
-    print(f"🎉 SUCCESS! Heatmap successfully generated and saved to: {save_path}")
+    print(f"SUCCESS! Heatmap successfully generated and saved to: {save_path}")
 
 if __name__ == "__main__":
     plot_master_confusion_matrix()

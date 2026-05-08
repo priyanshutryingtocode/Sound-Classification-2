@@ -6,10 +6,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 from torch.utils.data import DataLoader
-import torchaudio.transforms as T
+import torchaudio.transforms as T # type: ignore
 from tqdm import tqdm
 
-# Import from our modular files
 import config as cfg
 from dataset import UrbanSoundDataset
 from model import ResNetTF
@@ -36,16 +35,13 @@ def run_10_fold_cv():
 
         model = ResNetTF(num_classes=cfg.NUM_CLASSES).to(cfg.DEVICE)
         
-        # Added Label Smoothing for better generalization!
         criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
         
-        # Scheduler & Optimizer Setup
         optimizer = optim.Adam(model.parameters(), lr=cfg.LEARNING_RATE, weight_decay=cfg.WEIGHT_DECAY) 
         warmup_scheduler = LinearLR(optimizer, start_factor=0.01, total_iters=5)
         cosine_scheduler = CosineAnnealingLR(optimizer, T_max=cfg.EPOCHS - 5)
         scheduler = SequentialLR(optimizer, schedulers=[warmup_scheduler, cosine_scheduler], milestones=[5])
 
-        # Augmentation
         freq_masking = T.FrequencyMasking(freq_mask_param=cfg.FREQ_MASK_PARAM).to(cfg.DEVICE)
         time_masking = T.TimeMasking(time_mask_param=cfg.TIME_MASK_PARAM).to(cfg.DEVICE)
 
@@ -53,7 +49,6 @@ def run_10_fold_cv():
         patience_counter = 0
 
         for epoch in range(1, cfg.EPOCHS + 1):
-            # --- TRAIN PHASE ---
             model.train()
             running_loss, correct, total = 0.0, 0, 0
             train_pbar = tqdm(train_loader, desc=f"Epoch [{epoch}/{cfg.EPOCHS}] Train", leave=False)
@@ -80,7 +75,6 @@ def run_10_fold_cv():
             train_acc = 100 * correct / total
             scheduler.step()
 
-            # --- VALIDATION PHASE ---
             model.eval()
             val_loss, val_correct, val_total = 0.0, 0, 0
             val_pbar = tqdm(val_loader, desc=f"Epoch [{epoch}/{cfg.EPOCHS}] Val  ", leave=False)
@@ -102,7 +96,6 @@ def run_10_fold_cv():
 
             print(f"Epoch [{epoch}/{cfg.EPOCHS}] | Train Acc: {train_acc:.2f}% | Val Acc: {val_acc:.2f}% | Val Loss: {val_loss:.4f} | LR: {current_lr:.6f}")
 
-            # --- CHECKPOINT & EARLY STOPPING ---
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
                 patience_counter = 0 
@@ -118,12 +111,10 @@ def run_10_fold_cv():
         print(f"\n--- Fold {test_fold} Complete! Peak Accuracy: {best_val_acc:.2f}% ---")
         fold_results.append(best_val_acc)
 
-        # AGGRESSIVE MEMORY CLEANUP
         del model, optimizer, scheduler, train_loader, val_loader, train_ds, val_ds
         gc.collect()
         torch.cuda.empty_cache()
 
-    # --- FINAL REPORT ---
     print(f"\n\n{'='*60}")
     print(" 10-FOLD CROSS VALIDATION FINAL RESULTS")
     print(f"{'='*60}")
